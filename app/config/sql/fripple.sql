@@ -12,9 +12,9 @@ rebate_points      DECIMAL(10,2) NOT NULL DEFAULT '0' COMMENT 'total rebate poin
 created            datetime NOT NULL,
 updated            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 PRIMARY KEY (id),
-UNIQUE KEY (email_address, username),
-INDEX name (firstname, last_name),
-INDEX facebook_id
+UNIQUE INDEX (email_address),
+INDEX name (first_name, last_name),
+INDEX (facebook_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS account_session (
@@ -24,5 +24,5 @@ device_id       VARCHAR(255) NOT NULL COMMENT 'device id supplied by client when
 date_start      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 date_end        datetime NOT NULL COMMENT 'end of session is after 1 yr of date_start',
 PRIMARY KEY (id, device_id),
-UNIQUE KEY (user_id)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+UNIQUE INDEX (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

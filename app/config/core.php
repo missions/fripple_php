@@ -10,7 +10,8 @@ ini_set('error_log', LOGS_DIR.'php.log');
 ini_set('session.auto_start', 0);
 
 // MySQL: board
-define('DB_DSN', 'mysql:host=localhost;dbname=u760867219_gk');
-define('DB_USERNAME', 'u760867219_gk');
-define('DB_PASSWORD', '123456');
+require_once CONFIG_DIR.'/sql/db_client/mysql_connect.php';
+define('DB_DSN', sprintf('mysql:host=%s;dbname=%s', $db['host'], $db['name']));
+define('DB_USERNAME', $db['username']);
+define('DB_PASSWORD', $db['password']);
 define('DB_ATTR_TIMEOUT', 3);
