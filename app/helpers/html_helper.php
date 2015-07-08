@@ -11,11 +11,11 @@ function readable_text($s)
     $s = nl2br($s);
     return $s;
 }
-function to_array($object)
+function convert_session(AccountSession $session_info)
 {
-	$new_array = array();
-	foreach ($object as $key => $value) {
-		$new_array[$key] = $value;
-	}
-	return $new_array;
+    return array(
+        'id'        => $session_info->id,
+        'user_id'   => (int) $session_info->user_id,
+        'device_id' => $session_info->device_id
+    );
 }

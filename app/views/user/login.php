@@ -2,6 +2,6 @@
 $response = array(
     'is_success'    => true,
     'module_name'   => 'login',
-    'user' => to_array($user),
+    'session_info' => convert_session($session_info),
     'error_message' => ''
 );
