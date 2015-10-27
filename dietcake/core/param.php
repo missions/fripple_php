@@ -3,7 +3,7 @@ class Param
 {
     public static function get($name, $default = null)
     {
-        return isset($_REQUEST[$name]) ? $_REQUEST[$name] : $default;
+        return isset($_REQUEST[$name]) ? trim($_REQUEST[$name]) : $default;
     }
 
     public static function params()

@@ -7,7 +7,7 @@ class User extends AppModel
     {
         try {
             $db = DB::conn();
-            $user_info['created'] = date('Y-m-d H:i:s');
+            $user_info['created'] = Time::now();
             $db->insert('user', $user_info);
             return new self($user_info);
         } catch (SimpleDBIException $e) {

@@ -1,5 +1,4 @@
 <?php
-
 function eh($string)
 {
     if (!isset($string)) return;

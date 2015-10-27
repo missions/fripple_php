@@ -3,8 +3,21 @@ class UserController extends AppController
 {
     public function register()
     {
-        $user_info = param::getAll();
+        $first_name     = Param::get('fname');
+        $last_name      = Param::get('lname');
+        $username       = Param::get('uname');
+        $password       = Param::get('pword', null);
+        $facebook_id    = Param::get('fb_id', null);
+        $email_address  = Param::get('email_add');
         try {
+            $user_info = array(
+                'first_name'    => $first_name,
+                'last_name'     => $last_name,
+                'username'      => $username,
+                'password'      => $password,
+                'facebook_id'   => $facebook_id,
+                'email_address' => $email_address
+            );
             User::create($user_info);
         } catch (UserAlreadyExistsException $e) {
             $this->set(get_defined_vars());
