@@ -1,7 +1,7 @@
 <?php
     $db = array(
         'host'       => 'mysql.hostinger.ph',
-        'name'       => 'u599962241_clien',
-        'username'   => 'u599962241_clien',
+        'name'       => 'u360609312_fripp',
+        'username'   => 'u360609312_fripp',
         'password'   => 'missions11'
     );

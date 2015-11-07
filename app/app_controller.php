@@ -1,8 +1,9 @@
 <?php
 class AppController extends Controller
 {
+    private $user = null;
+    
     public $default_view_class = 'AppLayoutView';
-    public $user = null;
 
     public function dispatchAction()
     {
@@ -31,11 +32,15 @@ class AppController extends Controller
 
     public function start()
     {
-        if ($this->user) {
-            return $this->user;
+        if ($this->user == null) {
+            $session_id = Param::get('session_id');
+            $device_id = Param::get('device_id');
+            $session = AccountSession::get($session_id);
+            if (!$session->isValidDeviceId($session_id)) {
+                throw new InvalidArgumentException(sprintf('Device ID[%s] is not the recorded device id for Session ID[%s]', $device_id, $session_id));
+            }
+            $this->user = User::get($session->getUserId());
         }
-        $session_id = Param::get('session_id');
-        $this->user = User::getBySessionId($session_id);
         return $this->user;
     }
 }

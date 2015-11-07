@@ -6,8 +6,7 @@ username        VARCHAR(32) NOT NULL COMMENT 'REQUIRED, username is shown instea
 password        VARCHAR(255) COMMENT 'OPTIONAL, password is not supplied when signing in using fb',
 role            TINYINT(5) NOT NULL DEFAULT '0' COMMENT 'hardcoded value depending on user role',
 facebook_id     VARCHAR(255) COMMENT 'facebook id supplied by client when signing in using fb',
-email_address   VARCHAR(255) NOT NULL,
-location        VARCHAR(255) COMMENT 'WIP, need to clarify first with client side',
+email_address   VARCHAR(255) NOT NULL COMMENT 'might need to send info about purchases/updates',
 rebate_points   DECIMAL(10,2) NOT NULL DEFAULT '0' COMMENT 'total rebate points of user, always 0 for non-regular users',
 is_active       TINYINT(1) NOT NULL DEFAULT '0' COMMENT 'turns 1 if account is activated',
 created         datetime NOT NULL,
@@ -16,7 +15,6 @@ PRIMARY KEY (id),
 UNIQUE INDEX (email_address),
 UNIQUE INDEX (username),
 INDEX name (username, first_name, last_name),
-INDEX account_info (username, password),
 INDEX active_users (is_active, created)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -27,6 +25,7 @@ device_id       VARCHAR(255) NOT NULL COMMENT 'device id supplied by client when
 date_start      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 date_end        datetime NOT NULL COMMENT 'end of session is after 1 yr of date_start',
 PRIMARY KEY (user_id, device_id),
+UNIQUE INDEX (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS restaurant (
@@ -34,15 +33,15 @@ id              INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 name            VARCHAR(30) NOT NULL,
 description     TEXT COMMENT 'Brief description or introduction of the restaurant and what they serve',
 contact_number  VARCHAR(50) COMMENT 'For documentation and transaction client purposes',
-contact_person  VARCHAR(50) COMMENT 'Person in charge or owner',
+admin_id        INT(10) UNSIGNED NOT NULL COMMENT 'connected to user table, the id of the restaurant admin',
 longhitude      DECIMAL(12,8) NOT NULL DEFAULT '0' COMMENT 'Used to pinpoint the restaurant longhitude in G-Maps',
 latitude        DECIMAL(12,8) NOT NULL DEFAULT '0' COMMENT 'Used to pinpoint the restaurant latitude in G-Maps',
 created         datetime NOT NULL,
 updated         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 PRIMARY KEY (id),
-INDEX location (longhitude, latitude),
-INDEX contact (contact_person, contact_number),
-INDEX (name)
+UNIQUE INDEX (name),
+UNIQUE INDEX (admin_id),
+INDEX location (longhitude, latitude)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS restaurant_tags (
@@ -69,7 +68,7 @@ INDEX (price)
 CREATE TABLE IF NOT EXISTS menu_feedback (
 menu_id         INT(10) UNSIGNED NOT NULL,
 user_id         INT(10) UNSIGNED NOT NULL,
-is_liked        TINYINT(1) NOT NULL COMMENT 'Value will be 1 for like, 0 for dislike'
+is_liked        TINYINT(1) NOT NULL COMMENT 'Value will be 1 for like, 0 for dislike',
 PRIMARY KEY (menu_id, user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -102,13 +101,13 @@ date_end        datetime NOT NULL,
 created         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY (id),
 INDEX duration_per_resto (restaurant_id, date_start, date_end),
-INDEX duration (date_start, date_end),
+INDEX duration (date_start, date_end)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS advertisement_feedback (
 advertisement_id    INT(10) UNSIGNED NOT NULL,
 user_id             INT(10) UNSIGNED NOT NULL,
-is_liked            TINYINT(1) NOT NULL COMMENT 'Value will be 1 for like, 0 for dislike'
+is_liked            TINYINT(1) NOT NULL COMMENT 'Value will be 1 for like, 0 for dislike',
 PRIMARY KEY (advertisement_id, user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

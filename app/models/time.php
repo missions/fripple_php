@@ -1,8 +1,11 @@
 <?php
 class Time
 {
-    public static function now()
+    public static function now($time_from_now = null)
     {
+        if ($time_from_now) {
+            return date('Y-m-d H:i:s', strtotime($time_from_now));            
+        }
         return date('Y-m-d H:i:s');
     }
 
@@ -16,7 +19,7 @@ class Time
         return strtotime($datetime) < self::unix();
     }
 
-    public static function before_eq($datetime)
+    public static function beforeEq($datetime)
     {
         return strtotime($datetime) <= self::unix();
     }
@@ -26,7 +29,7 @@ class Time
         return strtotime($datetime) > self::unix();    
     }
 
-    public static function after_eq($datetime)
+    public static function afterEq($datetime)
     {
         return strtotime($datetime) >= self::unix();    
     }

@@ -11,10 +11,18 @@ class UserAlreadyExistsException extends AppException
 {
 }
 
+class UserBannedException extends AppException
+{
+}
+
 class RecordNotFoundException extends AppException
 {
 }
 
 class SessionAlreadyExistsException extends AppException
+{
+}
+
+class SessionAlreadyExpiredException extends AppException
 {
 }

@@ -5,51 +5,85 @@ class AccountSession extends AppModel
     public $user_id;
     public $device_id;
 
-    public static function get($session_info)
+    public static function get($id)
     {
         $db = DB::conn();
-        $row = $db->row('SELECT * FROM account_session WHERE user_id = ? AND device_id = ?',
-            array($session_info['user_id'], $session_info['device_id']));
+        $row = $db->row('SELECT * FROM account_session WHERE id = ?', array($id));
         if (!$row) {
-            throw new RecordNotFoundException();
+            throw new RecordNotFoundException(sprintf('Account session id %s does not exist', $id));
         }
         return new self($row);
     }
 
-    public static function getById($session_id)
+    public static function create($user_id, $device_id)
     {
-        $db = DB::conn();
-        $row = $db->row('SELECT * FROM account_session WHERE id = ?', array($session_id));
-        if (!$row) {
-            throw new RecordNotFoundException();
-        }
-        return new self($row);
-    }
-
-    public static function create($session_info)
-    {
-        $session_info['id'] = sprintf('%s%s', substr($session_info['device__id'], 0, 4), date('mYd'));
         try {
             $db = DB::conn();
-            $db->insert('user', $session_info);
-            return new self($session_info);
+            $params = array(
+                'user_id'   => $user_id,
+                'device_id' => $device_id,
+                'date_end'  => Time::now('+1 year')
+            );
+            $db->insert('user', $params);
+            $params['id'] = $db->lastInsertId();
+            return new self($params);
         } catch (SimpleDBIException $e) {
-            if ($e->isDuplicateEntry()) {
-                throw new SessionAlreadyExistsException();
-            } else {
-                Log::error($e->getMessage());
-            }
+            throw new SessionAlreadyExistsException(sprintf('Session for %s, device_id %s already exists', $user_id, $device_id));
         }
     }
 
-    public static function createIfNotExists($session_info)
+    public function getId()
+    {
+        return (int) $this->id;
+    }
+
+    public function getUserId()
+    {
+        return (int) $this->user_id;
+    }
+
+    public function getDeviceId()
+    {
+        return $this->device_id;
+    }
+
+    public function getDateStart()
+    {
+        return $this->date_start;
+    }
+
+    public function getDateEnd()
+    {
+        return $this->date_end;
+    }
+
+    public function isStarted()
+    {
+        return Time::before($this->getDateStart());
+    }
+
+    public function isExpired()
+    {
+        return Time::afterEq($this->getDateEnd());
+    }
+
+    public function isActive()
+    {
+        return !$this->isStarted() || $this->isExpired();
+    }
+
+    public function isValidDeviceId($device_id)
+    {
+        return $device_id == $this->getId();
+    }
+
+    public function delete()
     {
         try {
-            $session = self::get($session_info);
-        } catch (RecordNotFoundException $e) {
-            $session = self::create($session_info);
+            $db = DB::conn();
+            $db->query('DELETE FROM account_session WHERE id = ?', array($this->getId()));            
+        } catch (SimpleDBIException $e) {
+            Log::error($e->getMessage());
         }
-        return $session;
-
     }
 }
