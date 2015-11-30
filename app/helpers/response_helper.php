@@ -28,3 +28,32 @@ function get_session_response(AccountSession $session)
         'date_end'      => $session->getDateEnd(),
     );
 }
+
+function get_restaurant_response(Restaurant $restaurant)
+{
+    return array(
+        'id'                => $restaurant->getId(),
+        'name'              => $restaurant->getName(),
+        'description'       => $restaurant->getDescription(),
+        'contact_number'    => $restaurant->getContactNumber(),
+        'latitude'          => $restaurant->getLatitude(),
+        'longitude'        => $restaurant->getlongitude(),
+        'num_followers'     => $restaurant->getNumFollowers(),
+        'num_menu_likes'    => $restaurant->getNumMenuLikes(),
+        'num_menu_dislikes' => $restaurant->getNumMenuDislikes(),
+        'created'           => $restaurant->getCreated(),
+        'updated'           => $restaurant->getUpdated()
+    );
+}
+
+function get_advertisement_response(Advertisement $advertisement)
+{
+    return array(
+        'id'            => $advertisement->getId(),
+        'restaurant_id' => $advertisement->getRestaurantId(),
+        'num_likes'     => $advertisement->getNumLikes(),
+        'num_dislikes'  => $advertisement->getNumDislikes(),
+        'date_start'    => $advertisement->getDateStart(),
+        'date_end'      => $advertisement->getDateEnd()
+    );
+}

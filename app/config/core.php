@@ -14,3 +14,6 @@ define('DB_DSN', 'mysql:host=localhost;dbname=fripple');
 define('DB_USERNAME', 'root');
 define('DB_PASSWORD', '');
 define('DB_ATTR_TIMEOUT', 3);
+
+// Default NO IMAGE png file
+define('NO_IMAGE_URL', IMG_DIR.'no_image.png');

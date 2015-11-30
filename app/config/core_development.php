@@ -15,3 +15,6 @@ define('DB_DSN', sprintf('mysql:host=%s;dbname=%s', $db['host'], $db['name']));
 define('DB_USERNAME', $db['username']);
 define('DB_PASSWORD', $db['password']);
 define('DB_ATTR_TIMEOUT', 3);
+
+// Default NO IMAGE png file
+define('NO_IMAGE_URL', IMG_DIR.'no_image.png');

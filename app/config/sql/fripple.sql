@@ -15,6 +15,7 @@ PRIMARY KEY (id),
 UNIQUE INDEX (email_address),
 UNIQUE INDEX (username),
 INDEX name (username, first_name, last_name),
+INDEX facebook_id (facebook_id),
 INDEX active_users (is_active, created)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -29,25 +30,29 @@ UNIQUE INDEX (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS restaurant (
-id              INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-name            VARCHAR(30) NOT NULL,
-description     TEXT COMMENT 'Brief description or introduction of the restaurant and what they serve',
-contact_number  VARCHAR(50) COMMENT 'For documentation and transaction client purposes',
-admin_id        INT(10) UNSIGNED NOT NULL COMMENT 'connected to user table, the id of the restaurant admin',
-longhitude      DECIMAL(12,8) NOT NULL DEFAULT '0' COMMENT 'Used to pinpoint the restaurant longhitude in G-Maps',
-latitude        DECIMAL(12,8) NOT NULL DEFAULT '0' COMMENT 'Used to pinpoint the restaurant latitude in G-Maps',
-created         datetime NOT NULL,
-updated         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+id                INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+name              VARCHAR(30) NOT NULL,
+description       TEXT COMMENT 'Brief description or introduction of the restaurant and what they serve',
+num_followers     INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'number of followers updated after a user follow/unfollow',
+num_menu_likes    INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'number of menu likes updated after a user likes a menu item',
+num_menu_dislikes INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'number of menu dislikes updated after a user dislikes a menu item',
+contact_number    VARCHAR(50) COMMENT 'For documentation and transaction client purposes',
+admin_id          INT(10) UNSIGNED NOT NULL COMMENT 'connected to user table, the id of the restaurant admin',
+longitude         DECIMAL(12,8) NOT NULL DEFAULT '0' COMMENT 'Used to pinpoint the restaurant longitude in G-Maps',
+latitude          DECIMAL(12,8) NOT NULL DEFAULT '0' COMMENT 'Used to pinpoint the restaurant latitude in G-Maps',
+created           datetime NOT NULL,
+updated           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 PRIMARY KEY (id),
 UNIQUE INDEX (name),
 UNIQUE INDEX (admin_id),
-INDEX location (longhitude, latitude)
+INDEX location (longitude, latitude)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS restaurant_tags (
+CREATE TABLE IF NOT EXISTS restaurant_tag (
 restaurant_id   INT(10) UNSIGNED NOT NULL,
 tag             VARCHAR(30) NOT NULL COMMENT 'tags used for searching restaurants',
-PRIMARY KEY (restaurant_id, tag)
+PRIMARY KEY (restaurant_id, tag),
+INDEX (restaurant_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS menu (
@@ -66,10 +71,13 @@ INDEX (price)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS menu_feedback (
+restaurant_id   INT(10) UNSIGNED NOT NULL,
 menu_id         INT(10) UNSIGNED NOT NULL,
 user_id         INT(10) UNSIGNED NOT NULL,
 is_liked        TINYINT(1) NOT NULL COMMENT 'Value will be 1 for like, 0 for dislike',
-PRIMARY KEY (menu_id, user_id)
+PRIMARY KEY (menu_id, user_id),
+INDEX menu_likes (menu_id, is_liked),
+INDEX restaurant_likes (restaurant_id, is_liked)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS menu_comment (
@@ -88,14 +96,16 @@ INDEX date_sort (menu_id, updated)
 CREATE TABLE IF NOT EXISTS follower (
 restaurant_id   INT(10) UNSIGNED NOT NULL,
 user_id         INT(10) UNSIGNED NOT NULL,
-PRIMARY KEY (restaurant_id, user_id)
+PRIMARY KEY (restaurant_id, user_id),
+INDEX (restaurant_id),
+INDEX (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS advertisement (
 id              INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 restaurant_id   INT(10) UNSIGNED NOT NULL,
-main_image_url  TEXT NOT NULL,
-thumb_image_url TEXT NOT NULL,
+num_likes       INT(10) UNSIGNED NOT NULL DEFAULT '0',
+num_dislikes    INT(10) UNSIGNED NOT NULL DEFAULT '0',
 date_start      datetime NOT NULL,
 date_end        datetime NOT NULL,
 created         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -108,7 +118,8 @@ CREATE TABLE IF NOT EXISTS advertisement_feedback (
 advertisement_id    INT(10) UNSIGNED NOT NULL,
 user_id             INT(10) UNSIGNED NOT NULL,
 is_liked            TINYINT(1) NOT NULL COMMENT 'Value will be 1 for like, 0 for dislike',
-PRIMARY KEY (advertisement_id, user_id)
+PRIMARY KEY (advertisement_id, user_id),
+INDEX advertisement_likes (advertisement_id, is_liked)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS advertisement_comment (

@@ -10,7 +10,7 @@ class AccountSession extends AppModel
         $db = DB::conn();
         $row = $db->row('SELECT * FROM account_session WHERE id = ?', array($id));
         if (!$row) {
-            throw new RecordNotFoundException(sprintf('Account session id %s does not exist', $id));
+            throw new RecordNotFoundException(sprintf('Account session id [%s] does not exist', $id));
         }
         return new self($row);
     }
@@ -57,24 +57,14 @@ class AccountSession extends AppModel
         return $this->date_end;
     }
 
-    public function isStarted()
-    {
-        return Time::before($this->getDateStart());
-    }
-
-    public function isExpired()
-    {
-        return Time::afterEq($this->getDateEnd());
-    }
-
     public function isActive()
     {
-        return !$this->isStarted() || $this->isExpired();
+        return Time::between($this->getDateStart(), $this->getDateEnd());
     }
 
     public function isValidDeviceId($device_id)
     {
-        return $device_id == $this->getId();
+        return $device_id == $this->getDeviceId();
     }
 
     public function delete()

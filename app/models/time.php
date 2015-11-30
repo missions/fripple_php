@@ -33,4 +33,9 @@ class Time
     {
         return strtotime($datetime) >= self::unix();    
     }
+
+    public static function between($date_start, $date_end)
+    {
+        return self::afterEq($date_start) && self::before($date_end);
+    }
 }

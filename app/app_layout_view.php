@@ -9,8 +9,6 @@
 
 class AppLayoutView extends View
 {
-    public $layout = 'layouts/default';
-
     public function render($action = null)
     {
         // render content

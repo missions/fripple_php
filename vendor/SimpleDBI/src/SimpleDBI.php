@@ -5,7 +5,6 @@
  * @license MIT License
  * @author Tatsuya Tsuruoka <http://github.com/ttsuruoka>
  */
-require_once __DIR__ .'/SimpleDBIStatement.php';
 require_once __DIR__ .'/SimpleDBIException.php';
 class SimpleDBI
 {
@@ -21,9 +20,6 @@ class SimpleDBI
 
         // エラーモードを例外に設定
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        // PDOStatement ではなく SimpleDBIStatement を使うように設定
-        $this->pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, array('SimpleDBIStatement', array($this->pdo)));
 
         $this->dsn = $dsn;
     }
@@ -235,9 +231,15 @@ class SimpleDBI
     {
         list($sql, $params) = self::parseSQL($sql, $params);
         $this->st = $this->pdo->prepare($sql);
-        $r = $this->st->execute($params);
-        if (!$r) {
-            throw new PDOException("query failed: {$sql}");
+        try {
+            $ts = microtime(true);
+            $r = $this->st->execute($params);
+            $this->exec_time = microtime(true) - $ts;
+            if (!$r) {
+                throw new PDOException("query failed: {$sql}");
+            }
+        } catch(PDOException $e) {
+            throw new SimpleDBIException($e, $sql, $params);
         }
         $this->onQueryEnd($this->st->queryString, $params);
     }

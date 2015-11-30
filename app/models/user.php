@@ -15,11 +15,11 @@ class User extends AppModel
 
     public $validation = array(
         'username' => array(
-            'length' => validate_between(self::MIN_LEN_USERNAME, self::MAX_LEN_USERNAME)
+            'length' => 'validate_between', self::MIN_LEN_USERNAME, self::MAX_LEN_USERNAME
         ),
         'password' => array(
-            'length' => validate_between(self::MIN_LEN_PASSWORD, self::MAX_LEN_PASSWORD)
-        ),
+            'length' => 'validate_between', self::MIN_LEN_PASSWORD, self::MAX_LEN_PASSWORD
+        )
     );
 
     public static function get($user_id)
@@ -34,12 +34,16 @@ class User extends AppModel
 
     public static function create(array $params)
     {
-        if (!$params['pword'] && !$params['facebook_id']) {
+        $facebook_id = $params['facebook_id'];
+        if (!$params['password'] && !$facebook_id) {
             throw new InvalidArgumentException('Either a password/facebook id should be passed to create an account');
+        }
+        if ($facebook_id && self::isFacebookIdExisting($facebook_id)) {
+            throw new FacebookIdAlreadyExistsException(sprintf('Facebook id [%s] is already used by another user', $facebook_id));
         }
         try {
             $db = DB::conn();
-            $params['is_active']    = (int) ($params['role'] == ROLE_NORMAL);
+            $params['is_active']    = (int) ($params['role'] == self::ROLE_NORMAL);
             $params['password']     = ($params['password']) ? md5($params['password']) : null;
             $params['created']      = Time::now();
             $db->insert('user', $params);
@@ -51,17 +55,29 @@ class User extends AppModel
 
     public static function getByLoginInfo($username, $password, $facebook_id)
     {
-        if (!$password && !$facebook_id)
-            throw new InvalidArgumentException(sprintf('Invalid access for user [%s], device id [%s]', $username, $device_id));
+        if (!$password && !$facebook_id) {
+            throw new InvalidArgumentException(sprintf('Invalid access! Must have a facebook id or a username/password to get login info', $username, $facebook_id));
         }
         $db = DB::conn();
         $user = $db->row('SELECT * FROM user WHERE username = ? AND password = ? AND facebook_id = ?',
             array($username, $password, $facebook_id));
         if (!$user) {
-            throw new RecordNotFoundException(sprintf('No existing record for username: [%s], facebook_id: [%s]', $username, $facebook_id));
+            $login_info = array();
+            if ($username) {
+                $login_info[] = sprintf('username [%s]', $username);
+            }
+            if ($facebook_id) {
+                $login_info[] = sprintf('facebook_id [%s]', $facebook_id);
+            }
+            throw new RecordNotFoundException(sprintf('No existing user record (%s)', implode(', ', $login_info)));
         }       
         return new self($user);
-    }    
+    }
+
+    public function getServiceLocator()
+    {
+        return new ServiceLocator($this);
+    }
 
     public function getId()
     {
@@ -113,6 +129,11 @@ class User extends AppModel
         return (bool) $this->is_active;
     }
 
+    public function isNormal()
+    {
+        return $this->getRole() == self::ROLE_NORMAL;
+    }
+
     public function isBanned()
     {
         return $this->getRole() == self::ROLE_BANNED;
@@ -121,5 +142,42 @@ class User extends AppModel
     public function isRestaurantAdmin()
     {
         return $this->getRole() == self::ROLE_RESTAURANT_ADMIN;
+    }
+
+    public function isParamExisting($params, $param_condition = 'OR') {
+        $db = DB::conn();
+        $where = array();
+        foreach ($params as $key => $value) {
+            $where[] = sprintf('%s = ?', $key);
+            $where_params[] = $value;
+        }
+        $where = implode($param_condition.' ', $where);
+        $where_params = array($this->getId());
+        return (bool) $db->search('user', sprintf('%s AND id != ?', $where), $where_params);
+    }
+
+    public function connectToFacebook($facebook_id)
+    {
+        if ($this->getFacebookId()) {
+            throw new UserAlreadyConnectedToFacebookException(sprintf('User [%s] is already connected to facebook!', $this->getId()));
+        }
+        $db = DB::conn();
+        $param = array('facebook_id' => $facebook_id);
+        if (self::isParamExisting($param)) {
+            throw new FacebookIdAlreadyExistsException(sprintf('Facebook id [%s] is already used by another user', $facebook_id));
+        }
+        $db->update('user', array($param), array('id' => $this->getId()));
+    }
+
+    public function update(array $params)
+    {
+        try {
+            $db = DB::conn();
+            $params['password']     = ($params['password']) ? md5($params['password']) : null;
+            $db->update('user', $params, array('id' => $this->getId()));
+            $this->set($params);
+        } catch (SimpleDBIException $e) {
+            throw new UserAlreadyExistsException('Username/Email Address is already taken');
+        }
     }
 }
